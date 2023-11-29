@@ -1,5 +1,5 @@
 # Typescript Game
-You can play the game online from [here](https://cpsc.hiram.edu/)
+You can play the game online from the Hiram College computer science website [here](https://cpsc.hiram.edu/)!
 ## Setup
 
 1. On your computer you will need to have several pieces of software installed:
