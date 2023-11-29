@@ -18,7 +18,7 @@ To clone this repository run the following command:
 
 This will create a directory on your computer called **typescript_game** which will contain the contents of this game.
 
-3. Next, you will need to setup all the libraries the game depends on.  Go to the **typescript_game** directory and run the following command to create a **node_modules** directory and install the needed libraries into it.
+3. Next, you will need to setup all the libraries the game depends on.  Go to the **Apollo18** directory and run the following command to create a **node_modules** directory and install the needed libraries into it.
 
 `npm install`
 
