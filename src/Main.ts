@@ -13,61 +13,33 @@
  */
 
 import { Sprite } from "./sprites/Sprite.js";
-/**
- * handles loading of resources, keeping track and updating the state of everything in the game
- */
-import { GameManager } from "./GameManager.js";  
+
+import { GameManager } from "./GameManager.js";  //handles loading of resources, keeping track and updating the state of everything in the game
 import { Image, Renderer } from "p5";
 
 let game: GameManager;
 let canvas: Renderer;
 
 
+console.log("**** Loading Script ****");
 
-/**
- * this function runs before anything is shown to the person
- */
 export function preload() {
-	/**
-	 * all resources are loaded via the constructor of the GameManager
-	 */
-	game = new GameManager();
+	console.log("**** Starting Preload ****");
+	game = new GameManager(); //all resources are loaded via the constructor of the GameManager
+	console.log("**** Done Preload ****");
 }
-/**
- * this function sets up our game
- */
+
 export function setup() {
-	/**
-	 * the number of frames to be produced each second
-	 * it creates a canvas related to your window width and height
-	 * 
-	 */
+	console.log("**** Starting Setup ****");
 	frameRate(60);
 	canvas=createCanvas(windowWidth,windowHeight);
-	/**
- 	* Set the display style of the canvas to 'block' so that it fills the entire width of its container
- 	*/	
-	canvas.style('display', 'block');
-	/**
-	 * Set the padding of the canvas to 0px so that there is no extra space around it
-	 */
-	canvas.style('padding', '0px');
-	/**
-	 * Set the margin of the canvas to 0px so that there is no space between it
-	 */
-	canvas.style('margin', '0px');
-
+	canvas.style('display','block');
+	canvas.style('padding','0px');
+	canvas.style('margin','0px');
+	console.log("**** Done Setup ****");
 	
 }
 export function draw() {
-	/**
-	 * draws the background in a certain color
-	 * it sets the background to a certain size
-	 * if the game is focused or playable, then it will update
-	 * then it draws the images and it fills them with certain colors
-	 * then it draws another rectangle to hide things from off screen or 
-	 * so it will only show a certain portion of the game
-	 */
 	background(255); //just for testing purposes.  this probably can be removed when done.
 	let scaleFactor=min(width/800,height/600)
 	scale(scaleFactor,scaleFactor);
@@ -77,33 +49,22 @@ export function draw() {
 	game.draw();
 	fill(255);
 	stroke(255);
-	rect(800,0,width*10,height*10); 
+	rect(800,0,width*10,height*10); //a hack to make sure even with scaling only the correct portion of the game will be shown
 }
 
-/**
- * this function says whether or not you can resize the game to your liking
- */
+
 export function windowResized() {
-	/**
-	 * you can resize it to your window width and window height if you'd like
-	 */
+	console.log("**** Window Resized ****");
 	resizeCanvas(windowWidth, windowHeight);
 }
-/**
- * this function is a key pressed and if you press a certain key, 
- * then that key does something to the game
- */
+
 export function keyPressed() {
-	/**
-	 * if the 'm' key is pressed, then toggle menu will be initialized
-	 */
 	if (key=='m') {
 		game.toggleMenu();
 	}
-	/**
-	 * if the 'ESCAPE' key is pressed, then toggle fullscreen will be initialized
-	 */
 	if (keyCode==ESCAPE) {
 		game.toggleFullScreen();
 	}
 }
+
+console.log("**** Done Loading Script ****");

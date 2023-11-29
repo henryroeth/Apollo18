@@ -19,10 +19,8 @@ export class ResourceManager {
     loads: {[key: string]: any};
     resources: {[key: string]: any};
     everythingLoaded: boolean;
-    /**
-     * this initializes different aspects in the game
-     * @param f 
-     */
+
+
     constructor(f:string) {
         this.everythingLoaded=false;
         this.loads={};
@@ -39,18 +37,14 @@ export class ResourceManager {
     async init(f:string) {
         let promise=this.loadResource(f,"json");
         await promise.then(value =>{
-
-            /**
-             * loads up all the assets
-             */
+            console.log("just loaded assets file and it is",value)
+            //now load up all the assets
             this.assets=value;
             
         }).catch(value => {
             throw new Error("Unable To Load Asset File: "+f);
         });
-        /**
-         * loads all the assets at the same time 
-         */
+        //now load all the assets at the same time 
         let loadPromises=[];
         let loadNames=[];
         for (const loadType in this.assets) {
@@ -65,10 +59,9 @@ export class ResourceManager {
                 }
             }
         }
-        /**
-         * once all the assests are loaded, we store them in the loads object
-         */
+        //when they are loaded store them into loads
         await Promise.all(loadPromises).then( values => {
+            console.log("Got All The Assets!");
             for (let index = 0; index < values.length; index++) {
                 this.loads[loadNames[index]]=values[index];
                 
@@ -76,18 +69,17 @@ export class ResourceManager {
         }).catch( value => {
             throw new Error("Failed in loading assets "+value);
         });
-        /**
-         * this if loop processes all the resources
-         */
+        //^^^^^^^^^^^^^^^^^^^^^^ Done Getting the assets loaded ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        //vvvvvvvvvvvvvvvvvvvvvv Now Construct Resources from the Loaded Assets vvvvvvvvvvvvvvvvvvvvvvv
+        //now look for a resources key and process each key in it in order to build up resources
+        //for the game.
         if (this.loads.hasOwnProperty("resources")) {
             for (const resourceType in this.loads["resources"]) {
                 if (Object.prototype.hasOwnProperty.call(this.loads["resources"], resourceType)) {
                     const resources = this.loads["resources"][resourceType];
                     switch (resourceType) {
                         case "images": {
-                            /**
-                             *  copy them over to the resources with the given name
-                             */
+                            //just copy them over to the resources with the given name
                             for (const resourceName in resources) {
                                 if (Object.prototype.hasOwnProperty.call(resources, resourceName)) {
                                     const loadName = resources[resourceName];
@@ -97,9 +89,7 @@ export class ResourceManager {
                             break;
                         }
                         case "maps": {
-                            /**
-                             * Store local maps and levels as resources
-                             */
+                            //store the mappings and levels as resources.
                             for (const key in resources) {
                                 if (Object.prototype.hasOwnProperty.call(resources, key)) {
                                     this.resources[key]=resources[key];
@@ -108,15 +98,11 @@ export class ResourceManager {
                             break;
                         }
                         case "sounds": {
-                            /**
-                             * ignore sounds for now
-                             */
+                            //don't do anything with sounds yet
                             break;
                         }
                         case "sprites": {
-                            /**
-                             * creates sprites using the buildSprite function
-                             */
+                            //create each sprite
                             for (const spriteName in resources) {
                                 if (Object.prototype.hasOwnProperty.call(resources, spriteName)) {
                                     const buildProcess = resources[spriteName];
@@ -128,34 +114,22 @@ export class ResourceManager {
                             break;
                         }
                         default: {
+                            console.log("Unknown Resource Type:",resourceType);
                         }
                     }
                 }
             }
         } else {
+            console.log("Loaded Assets but no resources key so no resources will be built");
         }
-        /**
-         * tells us if everything has been loaded
-         */
+        console.log("Done Building Resources:",this.resources);
         this.everythingLoaded=true;
     }
-    /**
-     * This method initializes 's' as a sprite and it calls upon different sprite classes 
-     * to create different enemies or powerups in our game
-     * @param spriteName 
-     * @param anims 
-     * @param spriteType 
-     * @returns 
-     */
-    /**
-     * this method builds all of the sprites that are in our game
-     */
+    
     buildSprite(spriteName:string, anims: any, spriteType:string): Sprite {
+        console.log("spriteName",spriteName);
         let first=true;
         let s;
-        /**
-         * builds our sprites and names them
-         */
         switch (spriteType) {
             case 'Player': {
                 s = new Player();
@@ -233,52 +207,30 @@ export class ResourceManager {
                 break;
             }
             default: {
+                console.log("No Sprite Type:",spriteType);
                 throw new Error();
             }
         }
-        /**
-         * this for loop is a loop through each animation
-         */
         for (const animName in anims) {
+            console.log("animName",animName);
             if (Object.prototype.hasOwnProperty.call(anims, animName)) {
                 const frames = anims[animName];
-                /**
-                 * this adds animation to the sprites
-                 */
                 s.addAnimation(animName);
                 if (first) {
-                /**
-                 * sets the first animation to be played
-                 */
                     s.setAnimation(animName);
                     first=false;
                 }
-                /**
-                 * another loop for each animation
-                 */
                 frames.forEach(frame => {
+                    console.log("adding in frame:",frame);
                     let images;
                     if (frame.hasOwnProperty("sheet")) {
-                        /**
-                         * below states that if a sprite is part of a sprite sheet
-                         * it should divide the sheet into separate images
-                         */
                         let startImg=this.loads[frame.sheet];
                         images=this.divideUpImage(startImg,frame.rows,frame.cols);
                     } else {
-                        /**
-                         * it's a single image, but it keeps it as a list
-                         */
-                        images=[this.loads[frame.img]];
+                        images=[this.loads[frame.img]]; //just a single image but keep as a list
                     }
-                    /**
-                     * this is a loop for each image in the frame
-                     */
                     images.forEach(img => {
                         if (frame.hasOwnProperty("operators")) {
-                            /**
-                             * this applies any image operators before the animation
-                             */
                             frame['operators'].forEach(operator => {
                                 switch(operator) {
                                     case "mirror": {
@@ -290,14 +242,14 @@ export class ResourceManager {
                                         break;
                                     }
                                     default: {
+                                        console.log("Invalid Operation for Sprite ",spriteName,":",operator);
+                                        console.log("skipping frame for animation",animName);
                                         break;
                                     }
                                 }
                             });
-                        } 
-                        /**
-                         * adds the frame to the animation
-                         */
+                        }
+                        console.log("frame being added:",animName,img,frame.duration);
                         s.addFrame(animName,img,frame.duration);
                     })
                 });
@@ -305,33 +257,14 @@ export class ResourceManager {
         }
         return s;
     }
-    /**
-     * this method divdes images into a grid, based on how big they want the grid
-     * rows by columns
-     * @param img 
-     * @param rows 
-     * @param cols 
-     * @returns 
-     */
+
     divideUpImage(img:p5.Image,rows:number,cols:number):p5.Image[] {
         let images:p5.Image[]=[];
-        /**
-         * creates a canvas with the size of an image
-         */
         let canvas=createGraphics(img.width/cols,img.height/rows);
         for(let rowIndex=0;rowIndex<img.height;rowIndex+=img.height/rows) {
             for(let colIndex=0;colIndex<img.width;colIndex+=img.width/cols) {
-                /**
-                 * this draws divided images on the canvas
-                 */
                 canvas.image(img, 0,0, img.width/cols, img.height/rows, colIndex, rowIndex, img.width/cols, img.height/rows);
-                /**
-                 * this saves the canvas as an individual image
-                 */
                 images.push(canvas.get());
-                /**
-                 * this clears the canvas for the next divided images
-                 */
                 canvas.clear();
             }
         }
@@ -354,9 +287,6 @@ export class ResourceManager {
     loadResource(rsc:string,t:string):Promise<unknown> {
         return new Promise((resolve,reject) => {
             switch(t) {
-                /**
-                 * load an image as a spritesheet
-                 */
                 case "spritesheet": {
                     loadImage(rsc,img => {
                         resolve(img);
@@ -365,9 +295,6 @@ export class ResourceManager {
                     });
                     break;
                 }
-                /**
-                 * load an image
-                 */
                 case "image": {
                     loadImage(rsc,img => {
                         resolve(img);
@@ -376,9 +303,6 @@ export class ResourceManager {
                     });
                     break;
                 }
-                /**
-                 * load an text
-                 */
                 case "text": {
                     loadStrings(rsc,txt => {
                         resolve(txt);
@@ -387,9 +311,6 @@ export class ResourceManager {
                     });
                     break;
                 }
-                /**
-                 * load an json file
-                 */
                 case "json": {
                     loadJSON(rsc, j => {
                         resolve(j);
@@ -398,9 +319,6 @@ export class ResourceManager {
                     });
                     break;
                 }
-                /**
-                 * load an sound file
-                 */
                 case "sound": {
                     loadSound(rsc, j => {
                         resolve(j);
@@ -409,9 +327,6 @@ export class ResourceManager {
                     });
                     break;
                 }
-                /**
-                 * send an get request and load the response
-                 */
                 case "get": {
                     httpGet(rsc, j => {
                         resolve(j);
@@ -420,10 +335,6 @@ export class ResourceManager {
                     });
                     break;
                 }
-                /**
-                 * this states that if an invalid type is specified, 
-                 * reject it with an error message
-                 */
                 default: {
                     reject("invalid type of resource: "+t);
                     break;
@@ -431,136 +342,64 @@ export class ResourceManager {
             }
             });
     }
-    /**
-     * return an array of resource names stored in ResourceManager
-     * @returns
-     */
+
     listResources():string[] {
-        /**
-         * use object.keys to obtain an array of the names in this.resources
-         */
+        //console.log(this.resources);
         return Object.keys(this.resources);
     }
-    /**
-     * return the specified resource with its name
-     * @param name 
-     * @returns 
-     */
+
     get(name:string):any {
         return this.resources[name];
     }
-    /**
-     * return the loaded resource with its name
-     * @param name 
-     * @returns 
-     */
+
     getLoad(name:string):any {
         return this.loads[name];
     }
 
-    /**
-     * this method creates an upside down image
-     * @param img 
-     * @returns 
-     */
+    //creates an upside-down image
     flip(img:p5.Image):p5.Image {
-        /**
-         * Load the pixels of the original image
-         */
         img.loadPixels();
-        /**
-         *  Create a new image with the same dimensions as the original
-         */ 
         let img2=createImage(img.width,img.height);
         img2.loadPixels();
         let newRow=img2.height;
-      /**
-       * this for loop looks over each pixel in the image
-       */
         for(let row=0;row<img.height;row++) {
             for(let col=0;col<img.width;col++) {
-                /**
-                 * it calculates the starting index of the pixels in the original image
-                 */
                 let startIndex=(row*img.width+col)*4;
-                /**
-                 * it calculates the starting index of the pixels in the flipped image
-                 */
                 let newStartIndex=(newRow*img2.width+col)*4;
-                /**
-                 * it copies the pixel values from the original to the flipped image
-                 */
                 img2.pixels[newStartIndex]=img.pixels[startIndex];
                 img2.pixels[newStartIndex+1]=img.pixels[startIndex+1];
                 img2.pixels[newStartIndex+2]=img.pixels[startIndex+2];
                 img2.pixels[newStartIndex+3]=img.pixels[startIndex+3];
             }
-            /**
-             * its subtracting one from the new row
-             */
             newRow--;
         }
-        /**
-         * updates the pixels of the flipped image and returns it
-         */
         img2.updatePixels();
         return img2;
     }
-  
-    /**
-     * creates an mirrored image of the original photo
-     * @param img 
-     * @returns 
-     */
+
+    //creates a reflected image from the original
     mirror(img:p5.Image):p5.Image {
-        /**
-         * loads the pixels of the original image
-         */
         img.loadPixels();
-        /**
-         * creates a new image based off of the original image
-         */
         let img2 = createImage(img.width,img.height);
         img2.loadPixels();
-        /**
-         * this loop looks over each pixel in the image
-         */
         for(let row=0;row<img.height;row++) {
             let newCol=img.width-1;
             for(let col=0;col<img.width;col++) {
-                /**
-                 * it calculates the starting index of the pixels in the original image
-                 */
-                let startIndex=(row*img.width+col)*4;
-                /**
-                 * it calculates the ending index of the pixels in the original image
-                 */
-                let endIndex=(row*img.width+newCol)*4; 
-                /**
-                 * it copies the pixel values from the original to the flipped image
-                 */
+                let startIndex=(row*img.width+col)*4; //first index for pixel in row,col
+                let endIndex=(row*img.width+newCol)*4; //first index for pixel at end of row (counting backward)
                 img2.pixels[endIndex]=img.pixels[startIndex];
                 img2.pixels[endIndex+1]=img.pixels[startIndex+1];
                 img2.pixels[endIndex+2]=img.pixels[startIndex+2];
                 img2.pixels[endIndex+3]=img.pixels[startIndex+3];
-                /**
-                 * subtracts one from the column
-                 */
                 newCol--;
             }
-        } 
-        /**
-         * updates the pixels of the mirrored image and returns it
-         */
+        }
         img2.updatePixels();
         return img2;
     }
 
 }
-/**
- * This is an interface for a key-value pair where the keys are strings
- * and the values can be any type
- */
+
 interface KeyValuePair {
     [name:string]: any;
 }
